@@ -11,7 +11,7 @@ deviceInfo = {
 
 jsonServerUrl = "40.74.138.192"
 deviceInfoToJson = json.dumps(deviceInfo)
-deviceInfoToJson = urllib.quote
+deviceInfoToJson = urllib.quote(devoceInfoToJson)
 
 conn = httplib.HTTPConnection(jsonServerUrl)
 conn.request("GET", "/json.php?json" + deviceInfoToJson)
