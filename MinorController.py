@@ -14,7 +14,7 @@ deviceInfoToJson = json.dumps(deviceInfo)
 deviceInfoToJson = urllib.quote(deviceInfoToJson)
 
 conn = httplib.HTTPConnection(jsonServerUrl)
-conn.request("GET", "/json.php?json" + deviceInfoToJson)
+conn.request("GET", "/json.php?json=" + deviceInfoToJson)
 response = conn.getresponse()
 
 print response.read()
