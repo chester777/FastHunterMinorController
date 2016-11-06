@@ -1,6 +1,7 @@
 import json
 import time
-import urllib2
+import httplib
+import urllib
 
 deviceInfo = {
 	"deviceNo": 1,
@@ -8,16 +9,12 @@ deviceInfo = {
 	"timestamp": time.time()
 }
 
-jsonServerUrl = "http://40.74.138.192/json.php"
+jsonServerUrl = "40.74.138.192"
 deviceInfoToJson = json.dumps(deviceInfo)
-headers = {
-	'Content-Type': 'application/json'
-}
+deviceInfoToJson = urllib.quote
 
-request = urllib2.Request(jsonServerUrl, deviceInfoToJson, headers)
-f = urllib2.urlopen(request)
-response = f.read()
+conn = httplib.HTTPConnection(jsonServerUrl)
+conn.request("GET", "/json.php?json" + deviceInfoToJson)
+response = conn.getresponse()
 
-print response
-
-f.close()
+print response.read()
