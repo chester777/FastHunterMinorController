@@ -45,12 +45,10 @@ if __name__ == '__main__' :
 
 	    			currentTime = time.time()
 	    			cur.execute("INSERT INTO log VALUES(" + row[0] + "," + currentTime + "," + MAJOR + "," + MINOR +")")
-
-					deviceInfo = {
-						"deviceNo": row[0],
-						"deviceName": row[1]
-						"timestamp": currentTime,
-					}
+	    			
+					deviceInfo["deviceNo"] = row[0]
+					deviceInfo["deviceName"] = row[1]
+					deviceInfo["timestamp"]	= currentTime
 
 					if row[0] == 1 : deviceInfo["status"] = int(MAJOR)
 					elif row[0] == 2 : deviceInfo["status"] = int(MAJOR)
