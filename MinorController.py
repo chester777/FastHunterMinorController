@@ -5,38 +5,67 @@ import urllib
 import blescan
 import sys
 import bluetooth._bluetooth as bluez
+import re
+import sqlite3
 
-dev_id = 0
-try:
-    sock = bluez.hci_open_dev(dev_id)
-    print "ble thread started"
+macRegEx = r"[a-zA-Z0-9]{2}:[a-zA-Z0-9]{2}:[a-zA-Z0-9]{2}:[a-zA-Z0-9]{2}:[a-zA-Z0-9]{2}:[a-zA-Z0-9]{2}"
+deviceUuidRegEx = r"[a-zA-Z0-9]{32}"
 
-except:
-    print "error accessing bluetooth device..."
-    sys.exit(1)
+if __name__ == '__main__' :
+	dev_id = 0
+	try:
+	    sock = bluez.hci_open_dev(dev_id)
+	    print "ble thread started"
 
-blescan.hci_le_set_scan_parameters(sock)
-blescan.hci_enable_le_scan(sock)
+	except:
+	    print "error accessing bluetooth device..."
+	    sys.exit(1)
 
-while True:
-    returnedList = blescan.parse_events(sock, 10)
-    print "----------"
-    for beacon in returnedList:
-        print beacon	
+	blescan.hci_le_set_scan_parameters(sock)
+	blescan.hci_enable_le_scan(sock)
 
-deviceInfo = {
-	"deviceNo": 1,
-	"deviceName": "GasLock"
-	"timestamp": time.time(),
-	"status": 1
-}
+	conn = sqlite3.connect("recvBlePacket.db")
+	cur = conn.cursor()
 
-jsonServerUrl = "40.74.138.192"
-deviceInfoToJson = json.dumps(deviceInfo)
-deviceInfoToJson = urllib.quote(deviceInfoToJson)
+	while True:
+	    returnedList = blescan.parse_events(sock, 1)
+	    print "----------"
+	    for beacon in returnedList:
 
-conn = httplib.HTTPConnection(jsonServerUrl)
-conn.request("GET", "/json.php?json=" + deviceInfoToJson)
-response = conn.getresponse()
+	    	MAC_ADDR = beacon.split(",")[0]
+	    	UUID = beacon.split(",")[1]
+	    	MAJOR = beacon.split(",")[2]
+	    	MINOR = beacon.split(",")[3]
 
-print response.read()
+	    	cur.execute("SELECT deviceNo, deviceName FROM deviceInfo")
+
+	    	rows = cur.fetchall()
+	    	for row in rows :
+	    		if row != None :
+
+	    			currentTime = time.time()
+	    			cur.execute("INSERT INTO log VALUES(" + row[0] + "," + currentTime + "," + MAJOR + "," + MINOR +")")
+
+					deviceInfo = {
+						"deviceNo": row[0],
+						"deviceName": row[1]
+						"timestamp": currentTime,
+					}
+
+					if row[0] == 1 : deviceInfo["status"] = int(MAJOR)
+					elif row[0] == 2 : deviceInfo["status"] = int(MAJOR)
+					elif row[0] == 3 : deviceInfo["value"] = int(MINOR)
+					elif row[0] == 4 : deviceInfo["value"] = int(MINOR)
+					elif row[0] == 5 : deviceInfo["value"] = int(MINOR)
+					elif row[0] == 6 : deviceInfo["status"] = int(MAJOR)
+					elif row[0] == 7 : deviceInfo["value"] = int(MINOR)
+
+					jsonServerUrl = "40.74.138.192"
+					deviceInfoToJson = json.dumps(deviceInfo)
+					deviceInfoToJson = urllib.quote(deviceInfoToJson)
+
+					conn = httplib.HTTPConnection(jsonServerUrl)
+					conn.request("GET", "/json.php?json=" + deviceInfoToJson)
+					response = conn.getresponse()
+
+					print "packet sened to server"
