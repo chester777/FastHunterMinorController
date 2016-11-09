@@ -44,6 +44,7 @@ if __name__ == '__main__' :
 				if row != None :
 
 					currentTime = time.time()
+					type(row[0])
 					cur.execute("INSERT INTO log VALUES(" + row[0] + "," + currentTime + "," + MAJOR + "," + MINOR +")")
 
 					deviceInfo["deviceNo"] = row[0]
